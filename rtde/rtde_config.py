@@ -1,4 +1,4 @@
-#  Copyright (c) 2022. By Benjamin Byrdeck
+#  Copyright (c) 2023. By Benjamin Byrdeck
 
 import xml.etree.ElementTree as ET
 
