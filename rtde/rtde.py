@@ -197,7 +197,7 @@ class RTDE(object):
         try:
             while self.is_connected() and \
                 (buffer_limit == None or len(self.__buf) < buffer_limit) and \
-                    self.__recv_to_buffer(0):
+                    self.__recv_to_buffer(1):
                 pass
         except RTDEException as e:
             data = self.__recv_from_buffer(Command.RTDE_DATA_PACKAGE, binary)
