@@ -739,7 +739,7 @@ class Robot:
         self.send_control(f'set_payload({m}, {cog})')
         time.sleep(0.5)
 
-    def move(self, command, wait: bool = False, area: float = 0.01):
+    def move(self, command, wait: bool = False, area: float = 0.001):
         """Executes the genarated movement of robot. If wait == True, then the scrip is blocked until the target is reached.
         You can specify the the accuracy with level. Higher is more accurate. 
 
@@ -767,21 +767,21 @@ class Robot:
             return True
 
     # TODO: Work on this feature.
-    def tool_contact(self, direction: list):
-        while True:
-            step_back = tool_contact()
-            if step_back <= 0:
-                # Continue moving with 100mm/s
-                speedl([0, 0, -0.100, 0, 0, 0], 0.5, t=get_steptime())
-            else:
-                # Contact detected!
-                # Get q for when the contact was first seen
-                q = get_actual_joint_positions_history(step_back)
-                # Stop the movement
-                stopl(3)
-                # Move to the initial contact point
-                movel(q)
-                break
+    # def tool_contact(self, direction: list):
+    #     while True:
+    #         step_back = tool_contact()
+    #         if step_back <= 0:
+    #             # Continue moving with 100mm/s
+    #             speedl([0, 0, -0.100, 0, 0, 0], 0.5, t=get_steptime())
+    #         else:
+    #             # Contact detected!
+    #             # Get q for when the contact was first seen
+    #             q = get_actual_joint_positions_history(step_back)
+    #             # Stop the movement
+    #             stopl(3)
+    #             # Move to the initial contact point
+    #             movel(q)
+    #             break
 
     def set_digital_out(self, out: int, on: bool = True):
         """
@@ -881,7 +881,6 @@ def speedj(joints, a=1.2, t=0):
 
 
 if __name__ == "__main__":
-    import time
     rob = Robot("192.168.8.229")
     rob.connect()
     rob.get_controller_version()
