@@ -82,22 +82,22 @@ def get_item_size(data_type):
 
 def unpack_field(data, offset, data_type):
     size = get_item_size(data_type)
-    if(data_type == 'VECTOR6D' or
+    if (data_type == 'VECTOR6D' or
        data_type == 'VECTOR3D'):
         return [float(data[offset+i]) for i in range(size)]
-    elif(data_type == 'VECTOR6UINT32'):
+    elif (data_type == 'VECTOR6UINT32'):
         return [int(data[offset+i]) for i in range(size)]
-    elif(data_type == 'DOUBLE'):
+    elif (data_type == 'DOUBLE'):
         return float(data[offset])
-    elif(data_type == 'UINT32' or
-         data_type == 'UINT64'):
+    elif (data_type == 'UINT32' or
+          data_type == 'UINT64'):
         return int(data[offset])
-    elif(data_type == 'VECTOR6INT32'):
+    elif (data_type == 'VECTOR6INT32'):
         return [int(data[offset+i]) for i in range(size)]
-    elif(data_type == 'INT32' or
-         data_type == 'UINT8'):
+    elif (data_type == 'INT32' or
+          data_type == 'UINT8'):
         return int(data[offset])
-    elif(data_type == 'BOOL'):
+    elif (data_type == 'BOOL'):
         return bool(data[offset])
     raise ValueError('unpack_field: unknown data type: ' + data_type)
 
@@ -109,7 +109,7 @@ class DataObject(object):
         if len(names) != len(types):
             raise ValueError('List sizes are not identical.')
         l = []
-        if(self.recipe_id is not None):
+        if (self.recipe_id is not None):
             l.append(self.recipe_id)
         for i in range(len(names)):
             if self.__dict__[names[i]] is None:
