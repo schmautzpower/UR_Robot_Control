@@ -1,4 +1,4 @@
-#  Copyright (c) 2023. By Benjamin Byrdeck
+#  Copyright (c) 2024. By Benjamin Schmautz
 
 import struct
 
