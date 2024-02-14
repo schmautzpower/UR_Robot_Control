@@ -1,4 +1,25 @@
-#  Copyright (c) 2023. By Benjamin Byrdeck
+#  Copyright (c) 2022. By Benjamin Byrdeck
+# All rights reserved.
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are met:
+#    * Redistributions of source code must retain the above copyright
+#      notice, this list of conditions and the following disclaimer.
+#    * Redistributions in binary form must reproduce the above copyright
+#      notice, this list of conditions and the following disclaimer in the
+#      documentation and/or other materials provided with the distribution.
+#    * Neither the name of the Universal Robots A/S nor the names of its
+#      contributors may be used to endorse or promote products derived
+#      from this software without specific prior written permission.
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+# ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+# WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+# DISCLAIMED. IN NO EVENT SHALL UNIVERSAL ROBOTS A/S BE LIABLE FOR ANY
+# DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+# (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+# LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+# ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+# (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+# SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import struct
 import socket
@@ -233,7 +254,8 @@ class RTDE(object):
         elif cmd == Command.RTDE_DATA_PACKAGE:
             return self.__unpack_data_package(payload, self.__output_config)
         else:
-            _log.error('Unknown package command: ' + str(cmd))
+            return self.__unpack_data_package(payload, self.__output_config)
+            # _log.error('Unknown package command: ' + str(cmd))
 
     def __sendAndReceive(self, cmd, payload=b''):
         if self.__sendall(cmd, payload):
@@ -286,7 +308,7 @@ class RTDE(object):
                             self.__skipped_package_count += 1
                             continue
                     if packet_header.command == command:
-                        if(binary):
+                        if (binary):
                             return packet[1:]
 
                         return data
@@ -328,7 +350,7 @@ class RTDE(object):
                 packet, self.__buf = self.__buf[3:packet_header.size], self.__buf[packet_header.size:]
                 data = self.__on_packet(packet_header.command, packet)
                 if packet_header.command == command:
-                    if(binary):
+                    if (binary):
                         return packet[1:]
 
                     return data
@@ -359,12 +381,12 @@ class RTDE(object):
         if len(payload) < 1:
             _log.error('RTDE_TEXT_MESSAGE: No payload')
             return None
-        if(self.__protocolVersion == RTDE_PROTOCOL_VERSION_1):
+        if (self.__protocolVersion == RTDE_PROTOCOL_VERSION_1):
             msg = serialize.MessageV1.unpack(payload)
         else:
             msg = serialize.Message.unpack(payload)
 
-        if(msg.level == serialize.Message.EXCEPTION_MESSAGE or
+        if (msg.level == serialize.Message.EXCEPTION_MESSAGE or
            msg.level == serialize.Message.ERROR_MESSAGE):
             _log.error(msg.source + ': ' + msg.message)
         elif msg.level == serialize.Message.WARNING_MESSAGE:
