@@ -767,21 +767,24 @@ class Robot:
             return True
 
     # TODO: Work on this feature.
-    # def tool_contact(self, direction: list):
-    #     while True:
-    #         step_back = tool_contact()
-    #         if step_back <= 0:
-    #             # Continue moving with 100mm/s
-    #             speedl([0, 0, -0.100, 0, 0, 0], 0.5, t=get_steptime())
-    #         else:
-    #             # Contact detected!
-    #             # Get q for when the contact was first seen
-    #             q = get_actual_joint_positions_history(step_back)
-    #             # Stop the movement
-    #             stopl(3)
-    #             # Move to the initial contact point
-    #             movel(q)
-    #             break
+    def tool_contact(self, direction: list):
+        while True:
+            step_back = self.send_interpreter('tool_contact()')
+            _log.info(step_back)
+            if step_back <= 0:
+                # Continue moving with 100mm/s
+                self.move(speedl(direction, t=1))
+            else:
+                # Contact detected!
+                # Get q for when the contact was first seen
+                q = self.send_interpreter(
+                    f'get_actual_joint_positions_history({step_back})')
+                _log.info(q)
+                # Stop the movement
+                self.send_control("stopl(3)")
+                # Move to the initial contact point
+                self.move(movel(q))
+                break
 
     def set_digital_out(self, out: int, on: bool = True):
         """
@@ -878,17 +881,3 @@ def speedj(joints, a=1.2, t=0):
     t: time [s] before function returns (optional)
     """
     return f'speedj({joints}, {a}, {t})\n'
-
-
-if __name__ == "__main__":
-    rob = Robot("192.168.8.229")
-    rob.connect()
-    rob.get_controller_version()
-    # rob.power_on()
-    # rob.brake_release()
-    rob.move(movej([0.086, -0.52813, 0.017, 0, 3.14, 0], t=1), True, 0.0001)
-    rob.move(joints([-4.712388980384691, -1.5707963267948966, 1.570796326794897,
-                     -1.5707963267948966, -1.5707963267948966, 8.881784197001252e-16], t=1), True)
-    rob.move(joints([90, -90, 90, -90, -90, 0], t=3, deg=True), True)
-    rob.move(movel([200e-3, -300e-3, 100e-3, 2.221, 2.221, 0], t=3), True)
-    rob.move(movel([100e-3, -1000e-3, 10e-3, 2.221, 2.221, 0], t=5), True)
