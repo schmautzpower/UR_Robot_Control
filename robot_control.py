@@ -10,8 +10,6 @@ from rtde import rtde
 from rtde import rtde_config
 import logging
 
-logging.basicConfig(level=logging.INFO)
-
 _log = logging.getLogger("UR_Control")
 interpreter_port: int = 30020
 control_port: int = 30001  # alternative 30003
@@ -686,7 +684,7 @@ class Robot:
     def run_program(self, program: list):
         self.send_control('interpreter_mode()')
         self.clear_interpreter()
-        time.sleep(1)
+        time.sleep(0.5)
         buffer_limit = 500
         command_count = 1
         for line in program:
@@ -695,11 +693,13 @@ class Robot:
                 while self.get_last_executed_id() != command_id:
                     _log.info(
                         f"Last executed id {self.get_last_executed_id()}/{command_id}")
-                    time.sleep(2)
+                    time.sleep(0.2)
                 self.clear_interpreter()
             command_count += 1
-            while self.get_last_executed_id() != command_id:
-                time.sleep(1)
+        while self.get_last_executed_id() != command_id:
+            _log.info(
+                f"Last executed id {self.get_last_executed_id()}/{command_id}")
+            time.sleep(0.2)
         return True
 
     # endregion interpreter
@@ -766,25 +766,21 @@ class Robot:
                     time.sleep(0.1)
             return True
 
-    # TODO: Work on this feature.
-    def tool_contact(self, direction: list):
-        while True:
-            step_back = self.send_interpreter('tool_contact()')
-            _log.info(step_back)
-            if step_back <= 0:
-                # Continue moving with 100mm/s
-                self.move(speedl(direction, t=1))
-            else:
-                # Contact detected!
-                # Get q for when the contact was first seen
-                q = self.send_interpreter(
-                    f'get_actual_joint_positions_history({step_back})')
-                _log.info(q)
-                # Stop the movement
-                self.send_control("stopl(3)")
-                # Move to the initial contact point
-                self.move(movel(q))
-                break
+    def detect_contact(self, robot_ip, direction: list = [0, 0, -1, 0, 0, 0], force: float = 1.0, speed: float = 0.01):
+        state = self.get_state()
+        pose = state['tcp-pose']
+        for i in range(len(pose)):
+            pose[i] += direction[i]
+        detect_force = state["tcp-force-scalar"]
+        self.move(movel(pose, v=speed))
+        while 1:
+            state = self.get_state()
+            tcp_force = state["tcp-force-scalar"]
+            if tcp_force >= detect_force + force or tcp_force <= detect_force - force or not self.safety_status().__contains__('NORMAL'):
+                self.send_control('halt\n'.encode())
+                print(state['tcp-pose'])
+                return state['tcp-pose']
+            time.sleep(0.1)
 
     def set_digital_out(self, out: int, on: bool = True):
         """
@@ -805,6 +801,7 @@ class Robot:
 
     def set_analog_out(self, out: int, level: float):
         """Send analog out command in V
+        In some env, you need to wait for the robot to set the value. 
 
         Args:
             out (int): Output selection

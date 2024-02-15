@@ -12,5 +12,7 @@
 		<field name="script_control_line" type="UINT32"/>
 		<field name="target_TCP_pose" type="VECTOR6D"/>
 		<field name="actual_digital_output_bits" type="UINT64"/>
+		<field name="standard_analog_output0" type="DOUBLE"/>
+		<field name="standard_analog_output1" type="DOUBLE"/>
 	</recipe>
 </rtde_config>
