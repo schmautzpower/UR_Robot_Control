@@ -3,6 +3,7 @@
 This Software communicate with the UR Robot and Read the data.
 """
 from cmath import pi
+from threading import Thread
 import socket
 import re
 import time
@@ -198,7 +199,7 @@ class Robot:
             return 'Outputs 0 and 1 only supported.'
 
     def target_reached(self, target, area: float = 0.001, joints: bool = False):
-        """Check if the target is reached. 
+        """Check if the target is reached.
 
         Args:
             target (list): list of xyz coordinates
@@ -691,15 +692,18 @@ class Robot:
             command_id = self.send_interpreter(line)
             if command_count % buffer_limit == 0:
                 while self.get_last_executed_id() != command_id:
-                    _log.info(
-                        f"Last executed id {self.get_last_executed_id()}/{command_id}")
+                    # _log.info(
+                    #     f"Last executed id {self.get_last_executed_id()}/{command_id}")
+                    self.get_state()
                     time.sleep(0.2)
                 self.clear_interpreter()
             command_count += 1
         while self.get_last_executed_id() != command_id:
-            _log.info(
-                f"Last executed id {self.get_last_executed_id()}/{command_id}")
+            # _log.info(
+            #     f"Last executed id {self.get_last_executed_id()}/{command_id}")
+            self.get_state()
             time.sleep(0.2)
+        self.end_interpreter()
         return True
 
     # endregion interpreter
