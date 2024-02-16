@@ -685,7 +685,7 @@ class Robot:
     def run_program(self, program: list):
         self.send_control('interpreter_mode()')
         self.clear_interpreter()
-        time.sleep(0.5)
+        time.sleep(0.2)
         buffer_limit = 500
         command_count = 1
         for line in program:
@@ -730,7 +730,7 @@ class Robot:
             tcp (list): X, Y, Z, rX, rY, rZ
         """
         self.send_control(f'set_tcp(p{tcp})')
-        time.sleep(1)
+        time.sleep(0.1)
 
     def set_payload(self, m: float, cog: list = [0, 0, 0]):
         """Set Payload in kilograms
@@ -741,7 +741,7 @@ class Robot:
             cog (float): mass in kilograms
         """
         self.send_control(f'set_payload({m}, {cog})')
-        time.sleep(0.5)
+        time.sleep(0.1)
 
     def move(self, command, wait: bool = False, area: float = 0.001):
         """Executes the genarated movement of robot. If wait == True, then the scrip is blocked until the target is reached.
