@@ -853,8 +853,8 @@ def movel(posix: list, a=1.2, v=0.25, t=0, r=0):
 
 def joints(joints: list, a=1.2, v=0.25, t=0, r=0, deg=False):
     """
-    • a = 1.4 → acceleration is 1.4 rad/s/s
-    • v = 1.05 → velocity is 1.05 rad/s
+    • a = 1.2 → acceleration is 1.4 rad/s/s
+    • v = 0.25 → velocity is 1.05 rad/s
     • t = 0 the time (seconds) to make move is not specified. If it were specified the command would ignore the a and v values.
     • r = 0 → the blend radius is zero meters.
     • deg = If True it will calculate the joints from degrees to radians. 
