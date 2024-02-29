@@ -3,7 +3,6 @@
 This Software communicate with the UR Robot and Read the data.
 """
 from cmath import pi
-from threading import Thread
 import socket
 import re
 import time
@@ -12,6 +11,8 @@ from rtde import rtde_config
 import logging
 
 _log = logging.getLogger("UR_Control")
+logging.basicConfig(level=logging.WARNING)
+
 interpreter_port: int = 30020
 control_port: int = 30001  # alternative 30003
 rtde_port: int = 30004
@@ -23,8 +24,6 @@ class Robot:
     def __init__(self, robot_ip: str, refresh_rate: int = 125) -> None:
         self.robot_ip = robot_ip
         self.refresh_rate = refresh_rate
-
-        logging.getLogger().setLevel(logging.INFO)
 
         self.configfile = "control_loop_configuration.xml"
         self.config = rtde_config.ConfigFile(self.configfile)
@@ -692,15 +691,15 @@ class Robot:
             command_id = self.send_interpreter(line)
             if command_count % buffer_limit == 0:
                 while self.get_last_executed_id() != command_id:
-                    # _log.info(
-                    #     f"Last executed id {self.get_last_executed_id()}/{command_id}")
+                    _log.debug(
+                        f"Last executed id {self.get_last_executed_id()}/{command_id}")
                     self.get_state()
                     time.sleep(0.2)
                 self.clear_interpreter()
             command_count += 1
         while self.get_last_executed_id() != command_id:
-            # _log.info(
-            #     f"Last executed id {self.get_last_executed_id()}/{command_id}")
+            _log.debug(
+                f"Last executed id {self.get_last_executed_id()}/{command_id}")
             self.get_state()
             time.sleep(0.2)
         self.end_interpreter()
@@ -730,7 +729,7 @@ class Robot:
             tcp (list): X, Y, Z, rX, rY, rZ
         """
         self.send_control(f'set_tcp(p{tcp})')
-        time.sleep(0.1)
+        time.sleep(0.2)
 
     def set_payload(self, m: float, cog: list = [0, 0, 0]):
         """Set Payload in kilograms
@@ -741,7 +740,7 @@ class Robot:
             cog (float): mass in kilograms
         """
         self.send_control(f'set_payload({m}, {cog})')
-        time.sleep(0.1)
+        time.sleep(0.2)
 
     def move(self, command, wait: bool = False, area: float = 0.001):
         """Executes the genarated movement of robot. If wait == True, then the scrip is blocked until the target is reached.
