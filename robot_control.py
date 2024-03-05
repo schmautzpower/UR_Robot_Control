@@ -11,7 +11,7 @@ from rtde import rtde_config
 import logging
 
 _log = logging.getLogger("UR_Control")
-logging.basicConfig(level=logging.WARNING)
+logging.basicConfig(level=logging.INFO)
 
 interpreter_port: int = 30020
 control_port: int = 30001  # alternative 30003
@@ -704,6 +704,27 @@ class Robot:
             time.sleep(0.2)
         self.end_interpreter()
         return True
+
+    def tool_contact(self, direction: list, threshold: float = 2) -> list:
+        """Testing for tool contact. 
+
+        Args:
+            direction (list): List of directions to test [X,Y,Z,rX,rY,rZ]
+            Note that the values here specify the speed of the robot in meter per second
+            threshold (float, optional): Force that need to be reached in newton. Defaults to 2.
+
+        Returns:
+            list: Absolute TCP Postion where force was detected. 
+        """
+        bf = self.get_tcp_force_scalar()
+        while 1:
+            force = self.get_tcp_force_scalar()
+            if force < bf - threshold or force > threshold + bf or self.get_TCP_pose()[2] <= 0.370:
+                self.stop()
+                self.send_control('halt')
+                return self.get_TCP_pose()
+            else:
+                self.move(speedl(direction, t=1))
 
     # endregion interpreter
 
