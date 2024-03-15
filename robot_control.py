@@ -44,7 +44,7 @@ class Robot:
         self.dashboard.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
         self.dashboard_con = False
 
-    def connect(self):
+    def connect(self) -> None:
         try:
             self.control.connect((self.robot_ip, control_port))
             self.control_con = True
@@ -77,7 +77,7 @@ class Robot:
             _log.error("Failed to connect dashboard port" + str(e))
             self.dashboard_con = False
 
-    def disconnect(self):
+    def disconnect(self) -> None:
         self.control.close()
         self.control_con = False
         self.interpreter.close()
@@ -88,7 +88,7 @@ class Robot:
         self.dashboard.close()
         self.dashboard_con = False
 
-    def is_connected(self):
+    def is_connected(self) -> bool:
         if self.control_con and self.interpreter_con and self.rtde_con and self.dashboard_con:
             return True
         else:
@@ -96,10 +96,10 @@ class Robot:
 
     # region rtde
 
-    def get_controller_version(self):
+    def get_controller_version(self) -> tuple:
         return self.rtde.get_controller_version()
 
-    def get_state(self):
+    def get_state(self) -> dict[str]:
         state = self.rtde.receive()
         d = {
             'tcp-force': state.actual_TCP_force,
@@ -118,51 +118,51 @@ class Robot:
         }
         return d
 
-    def get_TCP_force(self):
+    def get_TCP_force(self) -> float:
         state = self.rtde.receive()
         return state.actual_TCP_force
 
-    def get_TCP_pose(self):
+    def get_TCP_pose(self) -> list[float]:
         state = self.rtde.receive()
         return state.actual_TCP_pose
 
-    def get_joints(self):
+    def get_joints(self) -> list[float]:
         state = self.rtde.receive()
         return state.actual_q
 
-    def get_TCP_speed(self):
+    def get_TCP_speed(self) -> list[float]:
         state = self.rtde.receive()
         return state.actual_TCP_speed
 
-    def get_runtime_state(self):
+    def get_runtime_state(self) -> int:
         state = self.rtde.receive()
         return state.runtime_state
 
-    def get_payload(self):
+    def get_payload(self) -> float:
         state = self.rtde.receive()
         return state.payload
 
-    def get_payloag_cog(self):
+    def get_payloag_cog(self) -> list[float]:
         state = self.rtde.receive()
         return state.payload_cog
 
-    def get_tcp_force_scalar(self):
+    def get_tcp_force_scalar(self) -> float:
         state = self.rtde.receive()
         return state.tcp_force_scalar
 
-    def get_script_control_line(self):
+    def get_script_control_line(self) -> int:
         state = self.rtde.receive()
         return state.script_control_line
 
-    def get_target_TCP_pose(self):
+    def get_target_TCP_pose(self) -> list[float]:
         state = self.rtde.receive()
         return state.target_TCP_pose
 
-    def get_actual_digital_output_bits(self):
+    def get_actual_digital_output_bits(self) -> int:
         state = self.rtde.receive()
         return state.actual_digital_output_bits
 
-    def get_digital_output_on(self, out_id: int):
+    def get_digital_output_on(self, out_id: int) -> bool:
         """
         DO0 = 0
         DO1 = 1
@@ -188,16 +188,16 @@ class Robot:
         else:
             return False
 
-    def get_analog_out(self, out_id: int):
+    def get_analog_out(self, out_id: int) -> float:
         state = self.rtde.receive()
         if out_id == 0:
             return state.standard_analog_output0
         elif out_id == 1:
             return state.standard_analog_output1
         else:
-            return 'Outputs 0 and 1 only supported.'
+            return 99
 
-    def target_reached(self, target, area: float = 0.001, joints: bool = False):
+    def target_reached(self, target, area: float = 0.001, joints: bool = False) -> bool:
         """Check if the target is reached.
 
         Args:
@@ -226,7 +226,7 @@ class Robot:
 
     # region dashboard
 
-    def send_dashboard(self, command: str):
+    def send_dashboard(self, command: str) -> str:
         command += '\n'
         self.dashboard.sendall(command.encode())
         try:
@@ -236,7 +236,7 @@ class Robot:
         logging.debug(re)
         return re
 
-    def load(self, program: str):
+    def load(self, program: str) -> str:
         """Returns when both program and associated installation has loaded (or failed). 
         The load command fails if the associated installation requires confirmation of safety. 
         The return value in this case will be 'Error while loading program'.
@@ -255,7 +255,7 @@ class Robot:
         """
         return self.send_dashboard(f'load {program}')
 
-    def play(self):
+    def play(self) -> str:
         """Returns failure if the program fails to start. In previous versions this did not happen in all cases.
 
         Returns:
@@ -267,7 +267,7 @@ class Robot:
         """
         return self.send_dashboard('play')
 
-    def stop(self):
+    def stop(self) -> str:
         """Returns failure if the program fails to stop. In previous versions this did not happen in all cases..
 
         Returns:
@@ -279,7 +279,7 @@ class Robot:
         """
         return self.send_dashboard('stop')
 
-    def pause(self):
+    def pause(self) -> str:
         """Returns failure if the program fails to pause. In previous versions this did not happen in all cases.
 
         Returns:
@@ -291,7 +291,7 @@ class Robot:
         """
         return self.send_dashboard('pause')
 
-    def shutdown(self):
+    def shutdown(self) -> str:
         """Shuts down and turns off robot and controller
 
         Returns:
@@ -300,7 +300,7 @@ class Robot:
         """
         return self.send_dashboard('shutdown')
 
-    def running(self):
+    def running(self) -> str:
         """Execution state enquiry
 
         Returns:
@@ -309,7 +309,7 @@ class Robot:
         """
         return self.send_dashboard('running')
 
-    def robotmode(self):
+    def robotmode(self) -> str:
         """Robot mode enquiry
 
         Returns:
@@ -322,7 +322,7 @@ class Robot:
         """
         return self.send_dashboard('robotmode')
 
-    def get_loaded_program(self):
+    def get_loaded_program(self) -> str:
         """Which program is loaded
 
         Returns:
@@ -331,7 +331,7 @@ class Robot:
         """
         return self.send_dashboard('get loaded program')
 
-    def popup(self, msg: str):
+    def popup(self, msg: str) -> str:
         """The popup-text will be translated to the selected language, if the text exists in the language file
 
         Args:
@@ -343,7 +343,7 @@ class Robot:
         """
         return self.send_dashboard(f'popup {msg}')
 
-    def close_popup(self):
+    def close_popup(self) -> str:
         """Closes the popup
 
         Returns:
@@ -352,7 +352,7 @@ class Robot:
         """
         return self.send_dashboard('close popup')
 
-    def add_to_log(self, msg: str):
+    def add_to_log(self, msg: str) -> str:
         """Adds log-message to the Log history
 
         Args:
@@ -364,7 +364,7 @@ class Robot:
         """
         return self.send_dashboard(f'addToLog {msg}')
 
-    def is_program_saved(self):
+    def is_program_saved(self) -> str:
         """Returns the save state of the active program and path to loaded program file.
 
         Returns:
@@ -373,7 +373,7 @@ class Robot:
         """
         return self.send_dashboard('isProgramSaved')
 
-    def program_state(self):
+    def program_state(self) -> str:
         """Returns the state of the active program and path to loaded program file, or STOPPED if no program is loaded
 
         Returns:
@@ -384,7 +384,7 @@ class Robot:
         """
         return self.send_dashboard('programState')
 
-    def polyscope_version(self):
+    def polyscope_version(self) -> str:
         """Returns version information for the UR software installed on the robot
 
         Returns:
@@ -393,7 +393,7 @@ class Robot:
         """
         return self.send_dashboard('PolyscopeVersion')
 
-    def version(self):
+    def version(self) -> str:
         """Returns the version number of the UR software installed on the robot
 
         Returns:
@@ -402,7 +402,7 @@ class Robot:
         """
         return self.send_dashboard('version')
 
-    def set_operational_mode(self, mode: str):
+    def set_operational_mode(self, mode: str) -> str:
         """Controls the operational mode. See User manual for details.
             Warning: This functionality is intended for using e.g. Ethernet based Key Card Readers 
             to switch operational modes. 
@@ -421,7 +421,7 @@ class Robot:
         """
         return self.send_dashboard(f'set operational mode {mode}')
 
-    def get_operational_mode(self):
+    def get_operational_mode(self) -> str:
         """Returns the operational mode as MANUAL or AUTOMATIC if the password has been set for Mode in Settings.
             Returns NONE if the password has not been set.      
 
@@ -431,7 +431,7 @@ class Robot:
         """
         return self.send_dashboard('get operational mode')
 
-    def clear_operational_mode(self):
+    def clear_operational_mode(self) -> str:
         """If this function is called the operational mode can again be changed from PolyScope, 
             and the user password is enabled. 
 
@@ -441,7 +441,7 @@ class Robot:
         """
         return self.send_dashboard('clear operational mode')
 
-    def power_on(self):
+    def power_on(self) -> str:
         """Powers on the robot arm
 
         Returns:
@@ -450,7 +450,7 @@ class Robot:
         """
         return self.send_dashboard('power on')
 
-    def power_off(self):
+    def power_off(self) -> str:
         """Powers off the robot arm
 
         Returns:
@@ -459,7 +459,7 @@ class Robot:
         """
         return self.send_dashboard('power off')
 
-    def brake_release(self):
+    def brake_release(self) -> str:
         """Releases the brakes
 
         Returns:
@@ -468,7 +468,7 @@ class Robot:
         """
         return self.send_dashboard('brake release')
 
-    def safety_status(self):
+    def safety_status(self) -> str:
         """Safety status inquiry.
             This differs from 'safetymode' by specifying if a given Safeguard Stop was caused by the permanent 
             safeguard I/O stop, a configurable I/O automatic mode safeguard stop or a configurable I/O three 
@@ -491,7 +491,7 @@ class Robot:
         """
         return self.send_dashboard('safetystatus')
 
-    def unlock_protective_stop(self):
+    def unlock_protective_stop(self) -> str:
         """Closes the current popup and unlocks protective stop. 
         The unlock protective stop command fails if less than 5 seconds has passed since the protective stop occurred.
 
@@ -504,7 +504,7 @@ class Robot:
         """
         return self.send_dashboard('unlock protective stop')
 
-    def close_safety_popup(self):
+    def close_safety_popup(self) -> str:
         """Closes a safety popup
 
         Returns:
@@ -513,7 +513,7 @@ class Robot:
         """
         return self.send_dashboard('close safety popup')
 
-    def load_installation(self, installation: str):
+    def load_installation(self, installation: str) -> str:
         """Loads the specified installation file but does not return until the load has completed (or failed).
             The load command fails if the associated installation requires confirmation of safety. 
             The return value will be 'Failed to load installation'.
@@ -531,7 +531,7 @@ class Robot:
         """
         return self.send_dashboard(f'load installation {installation}')
 
-    def restart_safety(self):
+    def restart_safety(self) -> str:
         """Used when robot gets a safety fault or violation to restart the safety. 
         After safety has been rebooted the robot will be in Power Off. 
         IMPORTANT: You should always ensure it is okay to restart the system. 
@@ -544,7 +544,7 @@ class Robot:
         """
         return self.send_dashboard('restart safety')
 
-    def remote_control(self):
+    def remote_control(self) -> str:
         """Returns the remote control status of the robot.
         If the robot is in remote control it returns true and if remote control is disabled or robot is 
         in local control it returns false.
@@ -555,7 +555,7 @@ class Robot:
         """
         return self.send_dashboard('is in remote control')
 
-    def get_serial_number(self):
+    def get_serial_number(self) -> str:
         """Returns serial number of the robot.
 
         Returns:
@@ -564,7 +564,7 @@ class Robot:
         """
         return self.send_dashboard('get serial number')
 
-    def get_robot_model(self):
+    def get_robot_model(self) -> str:
         """Returns the robot model
 
         Returns:
@@ -573,7 +573,7 @@ class Robot:
         """
         return self.send_dashboard('get robot model')
 
-    def generate_flight_report(self, type: str):
+    def generate_flight_report(self, type: str) -> str:
         """Triggers a Flight Report of the following type:
             • Controller- report with information specific for diagnosing controller errors. 
             For example, in case of protective stops, faults or violations.
@@ -594,7 +594,7 @@ class Robot:
         """
         return self.send_dashboard(f'generate flight report {type}')
 
-    def generate_support_file(self, path: str):
+    def generate_support_file(self, path: str) -> str:
         """Generates a flight report of the type "System" and creates a compressed collection of 
         all the existing flight reports on the robot along with the generated flight report.
         Result file ur_[robot serial number]_ YYYY-MM-DD_HH- MM-SS.zip is saved inside <Directory path>
@@ -617,7 +617,7 @@ class Robot:
 
     STATE_REPLY_PATTERN = re.compile(r"(\w+):\W+(\d+)?")
 
-    def send_interpreter(self, command: str):
+    def send_interpreter(self, command: str) -> str:
         """
         Send single line command to interpreter mode, and wait for reply
         :param command:
@@ -637,7 +637,7 @@ class Robot:
         except:
             return 0
 
-    def _get_reply(self):
+    def _get_reply(self) -> str:
         """
         read one line from the socket
         :return: text until new line
@@ -654,34 +654,34 @@ class Robot:
                 break
         return collected.decode("utf-8", "replace")
 
-    def start_interpreter(self):
+    def start_interpreter(self) -> str:
         return self.send_control("interpreter_mode()")
 
-    def clear_interpreter(self):
+    def clear_interpreter(self) -> str:
         return self.send_interpreter("clear_interpreter()")
 
-    def skip_interpreter_buffer(self):
+    def skip_interpreter_buffer(self) -> str:
         return self.send_interpreter("skipbuffer")
 
-    def abort_interpreter(self):
+    def abort_interpreter(self) -> str:
         return self.send_interpreter("abort")
 
-    def get_last_interpreted_id(self):
+    def get_last_interpreted_id(self) -> str:
         return self.send_interpreter("statelastinterpreted")
 
-    def get_last_executed_id(self):
+    def get_last_executed_id(self) -> str:
         return self.send_interpreter("statelastexecuted")
 
-    def get_last_cleared_id(self):
+    def get_last_cleared_id(self) -> str:
         return self.send_interpreter("statelastcleared")
 
-    def get_unexecuted_count(self):
+    def get_unexecuted_count(self) -> str:
         return self.send_interpreter("stateunexecuted")
 
-    def end_interpreter(self):
+    def end_interpreter(self) -> str:
         return self.send_interpreter("end_interpreter()")
 
-    def run_program(self, program: list):
+    def run_program(self, program: list) -> bool:
         self.send_control('interpreter_mode()')
         self.clear_interpreter()
         time.sleep(0.2)
@@ -730,7 +730,7 @@ class Robot:
 
     # region control
 
-    def send_control(self, command: str):
+    def send_control(self, command: str) -> None:
         """
         Send command without waiting for reply.
 
@@ -742,7 +742,7 @@ class Robot:
 
         self.control.send(command.encode("utf-8"))
 
-    def set_tcp(self, tcp):
+    def set_tcp(self, tcp) -> None:
         """Set TCP
         Will sleep for 1 second, otherwise robot will not take command. 
 
@@ -752,7 +752,7 @@ class Robot:
         self.send_control(f'set_tcp(p{tcp})')
         time.sleep(0.2)
 
-    def set_payload(self, m: float, cog: list = [0, 0, 0]):
+    def set_payload(self, m: float, cog: list = [0, 0, 0]) -> None:
         """Set Payload in kilograms
         Will sleep for half second, otherwise robot will not take command. 
 
@@ -763,7 +763,7 @@ class Robot:
         self.send_control(f'set_payload({m}, {cog})')
         time.sleep(0.2)
 
-    def move(self, command, wait: bool = False, area: float = 0.001):
+    def move(self, command, wait: bool = False, area: float = 0.001) -> bool:
         """Executes the genarated movement of robot. If wait == True, then the scrip is blocked until the target is reached.
         You can specify the the accuracy with level. Higher is more accurate. 
 
@@ -790,7 +790,7 @@ class Robot:
                     time.sleep(0.1)
             return True
 
-    def detect_contact(self, robot_ip, direction: list = [0, 0, -1, 0, 0, 0], force: float = 1.0, speed: float = 0.01):
+    def detect_contact(self, direction: list = [0, 0, -1, 0, 0, 0], force: float = 1.0, speed: float = 0.01) -> None:
         state = self.get_state()
         pose = state['tcp-pose']
         for i in range(len(pose)):
@@ -806,7 +806,7 @@ class Robot:
                 return state['tcp-pose']
             time.sleep(0.1)
 
-    def set_digital_out(self, out: int, on: bool = True):
+    def set_digital_out(self, out: int, on: bool = True) -> None:
         """
         Send a digital out command.
         DO0 = 0
@@ -823,7 +823,7 @@ class Robot:
         command = f'set_digital_out({str(out)}, {str(on)})'
         self.send_control(command)
 
-    def set_analog_out(self, out: int, level: float):
+    def set_analog_out(self, out: int, level: float) -> None:
         """Send analog out command in V
         In some env, you need to wait for the robot to set the value. 
 
@@ -839,15 +839,15 @@ class Robot:
     # endregion control
 
 
-def degree_to_radians(degree: float):
+def degree_to_radians(degree: float) -> float:
     return round(degree * pi / 180, 5)
 
 
-def radians_to_degree(radian: float):
+def radians_to_degree(radian: float) -> float:
     return round(radian * 180 / pi, 5)
 
 
-def movej(posix: list, a=1.4, v=1.05, t=0, r=0):
+def movej(posix: list, a=1.4, v=1.05, t=0, r=0) -> str:
     """
     Create Target where robot should move fastest
     • a = 1.4 → acceleration is 1.4 rad/s/s
@@ -859,7 +859,7 @@ def movej(posix: list, a=1.4, v=1.05, t=0, r=0):
     return f'movej(p{posix}, {a}, {v}, {t}, {r})\n'
 
 
-def movel(posix: list, a=1.2, v=0.25, t=0, r=0):
+def movel(posix: list, a=1.2, v=0.25, t=0, r=0) -> str:
     """
     Create Target where robot should move Linear
     a: tool acceleration [m/s^2]
@@ -871,7 +871,7 @@ def movel(posix: list, a=1.2, v=0.25, t=0, r=0):
     return f'movel(p{posix}, {a}, {v}, {t}, {r})\n'
 
 
-def joints(joints: list, a=1.2, v=0.25, t=0, r=0, deg=False):
+def joints(joints: list, a=1.2, v=0.25, t=0, r=0, deg=False) -> str:
     """
     • a = 1.2 → acceleration is 1.4 rad/s/s
     • v = 0.25 → velocity is 1.05 rad/s
@@ -885,7 +885,7 @@ def joints(joints: list, a=1.2, v=0.25, t=0, r=0, deg=False):
     return f'movej({joints}, {a}, {v}, {t}, {r})\n'
 
 
-def speedl(direction, a=1.2, t=0, aRot='a'):
+def speedl(direction, a=1.2, t=0, aRot='a') -> str:
     """
     direction: tool speed [m/s] (spatial vector)
     a: tool position acceleration [m/s^2]
@@ -895,7 +895,7 @@ def speedl(direction, a=1.2, t=0, aRot='a'):
     return f'speedl({direction}, {a}, {t}, aRot="{aRot}")\n'
 
 
-def speedj(joints, a=1.2, t=0):
+def speedj(joints, a=1.2, t=0) -> str:
     """
     joints: tool speed [rad/s]
     a: joint acceleration [rad/s^2] (of leading axis)
