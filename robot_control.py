@@ -49,33 +49,25 @@ class Robot:
             self.control.connect((self.robot_ip, control_port))
             self.control_con = True
             _log.info('Control port connected.')
-        except Exception as e:
-            _log.error("Failed to connect control port" + str(e))
-            self.control_con = False
-        try:
             self.interpreter.connect((self.robot_ip, interpreter_port))
             self.interpreter_con = True
             _log.info('Interpreter port connected.')
-        except Exception as e:
-            _log.error("Failed to connect interpreter port" + str(e))
-            self.interpreter_con = False
-        try:
             self.rtde.connect()
             self.rtde.send_output_setup(
                 self.state_names, self.state_types, frequency=self.refresh_rate)
             self.rtde.send_start()
             self.rtde_con = True
             _log.info('RTDE port connected.')
-        except Exception as e:
-            _log.error("Failed to connect data exchange port" + str(e))
-            self.rtde_con = False
-        try:
             self.dashboard.connect((self.robot_ip, dashboard_port))
+            _log.debug(self.dashboard.recv(4096).decode())
             self.dashboard_con = True
             _log.info('Control port connected.')
         except Exception as e:
-            _log.error("Failed to connect dashboard port" + str(e))
+            _log.error("Failed to connect" + str(e))
             self.dashboard_con = False
+            self.rtde_con = False
+            self.interpreter_con = False
+            self.control_con = False
 
     def disconnect(self) -> None:
         self.control.close()
