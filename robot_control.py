@@ -61,7 +61,7 @@ class Robot:
             self.dashboard.connect((self.robot_ip, dashboard_port))
             _log.debug(self.dashboard.recv(4096).decode())
             self.dashboard_con = True
-            _log.info('Control port connected.')
+            _log.info('Dashboard port connected.')
         except Exception as e:
             _log.error("Failed to connect" + str(e))
             self.dashboard_con = False
