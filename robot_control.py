@@ -828,6 +828,10 @@ class Robot:
         command = f'set_standard_analog_out({out}, {level/10})'
         self.send_control(command)
 
+    def halt(self):
+        """Immediatly stop the Robot movement. 
+        """
+        self.send_control('halt')
     # endregion control
 
 
