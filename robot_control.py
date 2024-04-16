@@ -6,8 +6,7 @@ from cmath import pi
 import socket
 import re
 import time
-from rtde import rtde
-from rtde import rtde_config
+from rtde import rtde, rtde_config, ConnectionState
 import logging
 
 _log = logging.getLogger("UR_Control")
@@ -16,10 +15,11 @@ logging.basicConfig(level=logging.INFO)
 interpreter_port: int = 30020
 control_port: int = 30001  # alternative 30003
 rtde_port: int = 30004
-dashboard_port = 29999
+dashboard_port: int = 29999
 
 
 class Robot:
+    enabled: bool = True
 
     def __init__(self, robot_ip: str, refresh_rate: int = 125) -> None:
         self.robot_ip = robot_ip
@@ -674,6 +674,8 @@ class Robot:
         return self.send_interpreter("end_interpreter()")
 
     def run_program(self, program: list) -> bool:
+        if not Robot.enabled:
+            return False
         self.send_control('interpreter_mode()')
         self.clear_interpreter()
         time.sleep(0.2)
@@ -686,6 +688,8 @@ class Robot:
                     _log.debug(
                         f"Last executed id {self.get_last_executed_id()}/{command_id}")
                     self.get_state()
+                    if not Robot.enabled:
+                        return False
                     time.sleep(0.2)
                 self.clear_interpreter()
             command_count += 1
@@ -693,6 +697,8 @@ class Robot:
             _log.debug(
                 f"Last executed id {self.get_last_executed_id()}/{command_id}")
             self.get_state()
+            if not Robot.enabled:
+                return False
             time.sleep(0.2)
         self.end_interpreter()
         return True
@@ -711,6 +717,8 @@ class Robot:
         bf = self.get_tcp_force_scalar()
         while 1:
             force = self.get_tcp_force_scalar()
+            if not Robot.enabled:
+                return [0, 0, 0, 0, 0, 0]
             if force < bf - threshold or force > threshold + bf or self.get_TCP_pose()[2] <= 0.370:
                 self.stop()
                 self.send_control('halt')
@@ -782,7 +790,7 @@ class Robot:
                     time.sleep(0.1)
             return True
 
-    def detect_contact(self, direction: list = [0, 0, -1, 0, 0, 0], force: float = 1.0, speed: float = 0.01) -> None:
+    def detect_contact(self, direction: list = [0, 0, -1, 0, 0, 0], force: float = 1.0, speed: float = 0.01) -> list[float]:
         state = self.get_state()
         pose = state['tcp-pose']
         for i in range(len(pose)):
@@ -792,6 +800,8 @@ class Robot:
         while 1:
             state = self.get_state()
             tcp_force = state["tcp-force-scalar"]
+            if not Robot.enabled:
+                return state['tcp-pose']
             if tcp_force >= detect_force + force or tcp_force <= detect_force - force or not self.safety_status().__contains__('NORMAL'):
                 self.send_control('halt\n'.encode())
                 print(state['tcp-pose'])
@@ -832,6 +842,7 @@ class Robot:
         """Immediatly stop the Robot movement. 
         """
         self.send_control('halt')
+        Robot.enabled = False
     # endregion control
 
 
